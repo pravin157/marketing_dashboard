@@ -5888,6 +5888,43 @@
                 return;
             }
 
+            // Prepend "Select All" option
+            const selectAllItem = document.createElement('label');
+            selectAllItem.className = 'ga-fd-value-checkbox-item select-all-item';
+            selectAllItem.style.borderBottom = '1px solid #f1f3f4';
+            selectAllItem.style.paddingBottom = '9px';
+            selectAllItem.style.marginBottom = '4px';
+            selectAllItem.style.fontWeight = '600';
+            
+            // Check if all visible items are currently checked
+            const allChecked = valuesArr.every(itemObj => gaFdTempSelected.has(itemObj.value));
+            
+            selectAllItem.innerHTML = `
+                <input type="checkbox" ${allChecked ? 'checked' : ''}>
+                <span style="color: #1a73e8;">Select All</span>
+            `;
+            
+            const selectAllCb = selectAllItem.querySelector('input');
+            selectAllCb.addEventListener('change', (e) => {
+                const checked = e.target.checked;
+                valuesArr.forEach(itemObj => {
+                    if (checked) {
+                        gaFdTempSelected.add(itemObj.value);
+                    } else {
+                        gaFdTempSelected.delete(itemObj.value);
+                    }
+                });
+                
+                // Update check state for all individual checkboxes in the DOM
+                listEl.querySelectorAll('.ga-fd-value-checkbox-item:not(.select-all-item) input').forEach(cb => {
+                    cb.checked = checked;
+                });
+                
+                updateGAFdSelectedCount();
+            });
+            listEl.appendChild(selectAllItem);
+
+            // Render individual items
             valuesArr.forEach(itemObj => {
                 const item = document.createElement('label');
                 item.className = 'ga-fd-value-checkbox-item';
@@ -5905,6 +5942,10 @@
                         gaFdTempSelected.delete(itemObj.value);
                     }
                     updateGAFdSelectedCount();
+                    
+                    // Update "Select All" checkbox state
+                    const currentAllChecked = valuesArr.every(vObj => gaFdTempSelected.has(vObj.value));
+                    selectAllCb.checked = currentAllChecked;
                 });
                 listEl.appendChild(item);
             });
