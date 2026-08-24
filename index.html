@@ -791,7 +791,7 @@
 
         .kpi-strip {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -1905,7 +1905,7 @@
                     <div class="section-icon icon-ov">📊</div>
                     <div class="section-title-block">
                         <h2>Cross-Channel Overview</h2>
-                        <p>Facebook · Instagram · Google Analytics · YouTube</p>
+                        <p>Facebook · Instagram · Google Analytics · YouTube · Search Console · PageSpeed</p>
                     </div>
                     <div class="section-line"></div>
                     <span class="range-tag" id="ovRangeTag">Last 31 Days</span>
@@ -1931,11 +1931,6 @@
                         <div class="kpi-strip-val" id="kpi-yt-videos">—</div>
                         <div class="kpi-strip-delta" id="kpi-yt-sub">—</div>
                     </div>
-                    <div class="kpi-strip-card">
-                        <div class="kpi-strip-label">GA4 Page Views</div>
-                        <div class="kpi-strip-val" id="kpi-views">—</div>
-                        <div class="kpi-strip-delta" id="kpi-views-sub">—</div>
-                    </div>
                 </div>
                 <div class="chart-row two-col">
                     <div class="card">
@@ -1955,6 +1950,59 @@
                             </div>
                         </div>
                         <div class="chart-wrap" style="height:240px;"><canvas id="overviewChannelChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="chart-row two-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">GSC Daily Clicks &amp; Impressions</div>
+                                <div class="card-subtitle" id="ovGscChartSub">Organic search performance</div>
+                            </div>
+                        </div>
+                        <div class="chart-wrap" style="height:240px;"><canvas id="overviewGscChart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Lighthouse Performance Scores</div>
+                                <div class="card-subtitle" id="ovPsSub">Google PageSpeed Insights</div>
+                            </div>
+                        </div>
+                        <div style="padding: 16px; display: flex; flex-direction: column; justify-content: space-between; height: 240px;">
+                            <div style="display: flex; align-items: center; justify-content: space-around; flex: 1;">
+                                <!-- Mobile Performance Chart -->
+                                <div style="position: relative; width: 110px; height: 110px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div class="chart-wrap" style="position: relative; width: 90px; height: 90px; margin-bottom: 4px;">
+                                        <canvas id="overviewPsMobileChart"></canvas>
+                                        <div id="ovPsMobileScoreCenter" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text);">
+                                            —
+                                        </div>
+                                    </div>
+                                    <div style="font-family: var(--font-display); font-size: 11px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 4px;">
+                                        📱 Mobile
+                                    </div>
+                                    <div id="ovPsMobileStatusBadge" class="gsc-position-badge gsc-pos-mid" style="font-size: 9px; padding: 1px 6px; margin-top: 2px;">—</div>
+                                </div>
+
+                                <!-- Desktop Performance Chart -->
+                                <div style="position: relative; width: 110px; height: 110px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div class="chart-wrap" style="position: relative; width: 90px; height: 90px; margin-bottom: 4px;">
+                                        <canvas id="overviewPsDesktopChart"></canvas>
+                                        <div id="ovPsDesktopScoreCenter" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--text);">
+                                            —
+                                        </div>
+                                    </div>
+                                    <div style="font-family: var(--font-display); font-size: 11px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 4px;">
+                                        🖥️ Desktop
+                                    </div>
+                                    <div id="ovPsDesktopStatusBadge" class="gsc-position-badge gsc-pos-mid" style="font-size: 9px; padding: 1px 6px; margin-top: 2px;">—</div>
+                                </div>
+                            </div>
+                            <div style="text-align: center; margin-top: 4px; font-size: 11px; color: var(--muted);" id="ovPsAnalyzedUrl">
+                                URL: —
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="chart-row three-col">
@@ -3489,8 +3537,10 @@
 
                 document.getElementById('kpi-users').textContent = fmt(gaUsers);
                 document.getElementById('kpi-users-sub').textContent = `${gaDays} days`;
-                document.getElementById('kpi-views').textContent = fmt(gaViews);
-                document.getElementById('kpi-views-sub').textContent = `${gaDays} days`;
+                const kpiViewsEl = document.getElementById('kpi-views');
+                if (kpiViewsEl) kpiViewsEl.textContent = fmt(gaViews);
+                const kpiViewsSubEl = document.getElementById('kpi-views-sub');
+                if (kpiViewsSubEl) kpiViewsSubEl.textContent = `${gaDays} days`;
                 document.getElementById('ga-users').textContent = fmt(gaUsers);
                 document.getElementById('ga-users-d').textContent = `${gaDays} days`;
                 document.getElementById('ga-new').textContent = fmt(gaNewUsers);
@@ -4069,20 +4119,63 @@
             }
 
             // KPI cards
-            document.getElementById('gsc-clicks').textContent = fmt(d.clicks);
-            document.getElementById('gsc-impressions').textContent = fmt(d.impressions);
-            document.getElementById('gsc-ctr').textContent = d.ctr + '%';
-            document.getElementById('gsc-position').textContent = '#' + d.position;
-            document.getElementById('gsc-clicks-d').textContent = `${d.dailyPerformance.length} days`;
-            document.getElementById('gsc-imp-d').textContent = `${d.dailyPerformance.length} days`;
+            if (document.getElementById('gsc-clicks')) document.getElementById('gsc-clicks').textContent = fmt(d.clicks);
+            if (document.getElementById('gsc-impressions')) document.getElementById('gsc-impressions').textContent = fmt(d.impressions);
+            if (document.getElementById('gsc-ctr')) document.getElementById('gsc-ctr').textContent = d.ctr + '%';
+            if (document.getElementById('gsc-position')) document.getElementById('gsc-position').textContent = '#' + d.position;
+            if (document.getElementById('gsc-clicks-d')) document.getElementById('gsc-clicks-d').textContent = `${d.dailyPerformance.length} days`;
+            if (document.getElementById('gsc-imp-d')) document.getElementById('gsc-imp-d').textContent = `${d.dailyPerformance.length} days`;
+
+            // KPI cards in Overview tab
+            if (document.getElementById('kpi-gsc-clicks')) document.getElementById('kpi-gsc-clicks').textContent = fmt(d.clicks);
+            if (document.getElementById('kpi-gsc-clicks-sub')) document.getElementById('kpi-gsc-clicks-sub').textContent = `${d.ctr}% avg CTR`;
+            if (document.getElementById('kpi-gsc-impressions')) document.getElementById('kpi-gsc-impressions').textContent = fmt(d.impressions);
+            if (document.getElementById('kpi-gsc-impressions-sub')) document.getElementById('kpi-gsc-impressions-sub').textContent = `#${d.position} avg position`;
 
             const el = document.getElementById('gscSubtitle');
             if (el) el.textContent = `${d.siteUrl} · ${d.dateRange.startDate} → ${d.dateRange.endDate}`;
             const rt = document.getElementById('gscRangeTag');
             if (rt) rt.textContent = `${d.dateRange.startDate} → ${d.dateRange.endDate}`;
 
+            // Overview page GSC Chart Subtitle
+            const ovGscSub = document.getElementById('ovGscChartSub');
+            if (ovGscSub) ovGscSub.textContent = `${d.siteUrl} · ${d.dateRange.startDate} → ${d.dateRange.endDate}`;
+
             // Chart 1: Daily clicks & impressions (dual-axis)
             makeChart('gscClicksChart', 'line', {
+                labels: d.dailyPerformance.map(r => r.date.slice(5)),
+                datasets: [
+                    {
+                        label: 'Clicks',
+                        data: d.dailyPerformance.map(r => r.clicks),
+                        borderColor: '#34a853',
+                        backgroundColor: 'rgba(52,168,83,.08)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Impressions',
+                        data: d.dailyPerformance.map(r => r.impressions),
+                        borderColor: '#4285f4',
+                        backgroundColor: 'rgba(66,133,244,.06)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            }, {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7080a0', maxRotation: 45 } },
+                    y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 }, color: '#34a853' }, position: 'left', title: { display: true, text: 'Clicks', font: { size: 10 }, color: '#34a853' } },
+                    y1: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#4285f4' }, position: 'right', title: { display: true, text: 'Impressions', font: { size: 10 }, color: '#4285f4' } }
+                }
+            });
+
+            // Chart Overview GSC: Daily clicks & impressions (dual-axis)
+            makeChart('overviewGscChart', 'line', {
                 labels: d.dailyPerformance.map(r => r.date.slice(5)),
                 datasets: [
                     {
@@ -4477,7 +4570,7 @@
             }
         }
 
-        async function fetchGSC(customSiteUrl = null, forceRefresh = false) {
+        async function fetchGSC(customSiteUrl = null, forceRefresh = false, showNotification = true) {
             const loadBtn = document.getElementById('gscLoadBtn');
             const refBtn = document.getElementById('gscRefreshBtn');
             const loadSiteBtn = document.getElementById('gscLoadSiteBtn');
@@ -4527,14 +4620,14 @@
                 if (content) content.style.display = '';
 
                 renderGSC();
-                showToast(`✅ Search Console loaded: ${GSC_DATA.siteUrl}`);
+                if (showNotification) showToast(`✅ Search Console loaded: ${GSC_DATA.siteUrl}`);
 
                 // Fetch list of sites once loaded if not already populated
                 if (cachedGscSites.length === 0) {
                     await loadGscSites();
                 }
             } catch (err) {
-                showToast('GSC failed: ' + err.message, true);
+                if (showNotification) showToast('GSC failed: ' + err.message, true);
                 const empty = document.getElementById('gscEmpty');
                 const content = document.getElementById('gscContent');
                 if (empty) {
@@ -4966,6 +5059,10 @@
                 const payload = await res.json();
                 applyDataset(payload);
                 renderAll();
+
+                // Fetch Search Console and PageSpeed on startup (cached/background) without noisy toasts
+                fetchGSC(null, false, false);
+                fetchPageSpeedAnalysis(false);
             } catch {
                 // Running as static file or server not up — empty state is correct
             }
@@ -4987,6 +5084,11 @@
                 if (!res.ok) throw new Error(payload.error || 'Refresh failed');
                 applyDataset(payload);
                 renderAll();
+
+                // Force refresh GSC and PageSpeed in the background (no noisy toasts for GSC)
+                fetchGSC(null, true, false);
+                fetchPageSpeedAnalysis(true);
+
                 showToast(payload.warnings?.length ? 'Refreshed. Notes: ' + payload.warnings.join(' · ') : '✅ Live data refreshed successfully!');
             } catch (err) {
                 const pill = document.getElementById('dataSourcePill');
@@ -5166,6 +5268,9 @@
         // ── Page Performance JS Client ──────────────────────────────────────────────────
         let psActiveStrategy = 'mobile';
         let psLoaded = false;
+        let PS_MOBILE_DATA = null;
+        let PS_DESKTOP_DATA = null;
+        let PS_LAST_URL = '';
 
         async function fetchPageSpeedAnalysis(forceRefresh = false) {
             const urlInput = document.getElementById('psUrlInput');
@@ -5179,6 +5284,17 @@
 
             const targetUrl = (urlInput ? urlInput.value.trim() : '') || 'https://intoaec.ai/';
 
+            // If we have cached data in memory and URL hasn't changed, and not force refreshing:
+            if (!forceRefresh && PS_MOBILE_DATA && PS_DESKTOP_DATA && PS_LAST_URL === targetUrl) {
+                if (psActiveStrategy === 'mobile' && PS_MOBILE_DATA) {
+                    renderPageSpeedResults(PS_MOBILE_DATA);
+                } else if (psActiveStrategy === 'desktop' && PS_DESKTOP_DATA) {
+                    renderPageSpeedResults(PS_DESKTOP_DATA);
+                }
+                renderOverviewPageSpeedCharts(PS_MOBILE_DATA, PS_DESKTOP_DATA);
+                return;
+            }
+
             if (loadingDiv) loadingDiv.style.display = 'block';
             if (errorDiv) errorDiv.style.display = 'none';
             if (resultsDiv) resultsDiv.style.display = 'none';
@@ -5187,19 +5303,54 @@
             if (refBtn) { refBtn.disabled = true; refBtn.textContent = '⏳ Loading...'; }
 
             try {
-                const res = await fetch('/api/pagespeed/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: targetUrl, strategy: psActiveStrategy, refresh: forceRefresh })
-                });
+                // Fetch both strategies in parallel
+                const [mobileRes, desktopRes] = await Promise.all([
+                    fetch('/api/pagespeed/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: targetUrl, strategy: 'mobile', refresh: forceRefresh })
+                    }).catch(err => {
+                        console.error('Mobile fetch error:', err);
+                        return { ok: false, json: () => Promise.resolve({ success: false, error: err.message }) };
+                    }),
+                    fetch('/api/pagespeed/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: targetUrl, strategy: 'desktop', refresh: forceRefresh })
+                    }).catch(err => {
+                        console.error('Desktop fetch error:', err);
+                        return { ok: false, json: () => Promise.resolve({ success: false, error: err.message }) };
+                    })
+                ]);
 
-                const payload = await res.json();
-                if (!res.ok || !payload.success) {
-                    throw new Error(payload.error || 'Failed to analyze page performance');
+                const mobilePayload = await mobileRes.json();
+                const desktopPayload = await desktopRes.json();
+
+                if ((!mobileRes.ok || !mobilePayload.success) && (!desktopRes.ok || !desktopPayload.success)) {
+                    throw new Error(mobilePayload.error || desktopPayload.error || 'Failed to analyze page performance for both mobile and desktop');
                 }
 
-                renderPageSpeedResults(payload);
+                if (mobilePayload.success) {
+                    PS_MOBILE_DATA = mobilePayload;
+                }
+                if (desktopPayload.success) {
+                    PS_DESKTOP_DATA = desktopPayload;
+                }
+                PS_LAST_URL = targetUrl;
                 psLoaded = true;
+
+                // Render active strategy in Page Performance tab
+                if (psActiveStrategy === 'mobile' && PS_MOBILE_DATA) {
+                    renderPageSpeedResults(PS_MOBILE_DATA);
+                } else if (psActiveStrategy === 'desktop' && PS_DESKTOP_DATA) {
+                    renderPageSpeedResults(PS_DESKTOP_DATA);
+                } else if (PS_MOBILE_DATA || PS_DESKTOP_DATA) {
+                    renderPageSpeedResults(PS_MOBILE_DATA || PS_DESKTOP_DATA);
+                }
+
+                // Render overview Page Performance charts (both mobile and desktop)
+                renderOverviewPageSpeedCharts(PS_MOBILE_DATA, PS_DESKTOP_DATA);
+
             } catch (err) {
                 console.error('PageSpeed analysis failed:', err.message);
                 if (errorText) errorText.textContent = err.message || 'Failed to pull PageSpeed Insights data.';
@@ -5252,6 +5403,25 @@
             document.getElementById('psAccessScoreVal').textContent = scores.accessibility != null ? scores.accessibility : '—';
             document.getElementById('psBpScoreVal').textContent = scores.bestPractices != null ? scores.bestPractices : '—';
             document.getElementById('psSeoScoreVal').textContent = scores.seo != null ? scores.seo : '—';
+
+            // Update Overview tab elements
+            const ovKpiPerfVal = document.getElementById('kpi-perf-score');
+            if (ovKpiPerfVal) ovKpiPerfVal.textContent = perfVal;
+            const ovKpiPerfSub = document.getElementById('kpi-perf-sub');
+            if (ovKpiPerfSub) {
+                let statusText = '—';
+                if (scores.performance != null) {
+                    if (scores.performance < 50) statusText = 'Poor';
+                    else if (scores.performance < 90) statusText = 'Needs Improvement';
+                    else statusText = 'Good';
+                }
+                ovKpiPerfSub.textContent = statusText;
+            }
+
+            const ovPsAnalyzedUrl = document.getElementById('ovPsAnalyzedUrl');
+            if (ovPsAnalyzedUrl) {
+                ovPsAnalyzedUrl.textContent = `URL: ${data.url || '—'}`;
+            }
 
             // Field vs Lab Data handling
             const field = data.fieldData || {};
@@ -5372,6 +5542,87 @@
             document.getElementById('psTtfbVal').textContent = metrics.ttfb || '—';
             document.getElementById('psSpeedIndexVal').textContent = metrics.speedIndex || '—';
             document.getElementById('psTbtVal').textContent = metrics.tbt || '—';
+        }
+
+        function renderOverviewPageSpeedCharts(mobileData, desktopData) {
+            const ovPsAnalyzedUrl = document.getElementById('ovPsAnalyzedUrl');
+            if (ovPsAnalyzedUrl) {
+                ovPsAnalyzedUrl.textContent = `URL: ${mobileData?.url || desktopData?.url || '—'}`;
+            }
+
+            const mScores = mobileData?.scores || {};
+            const mScore = mScores.performance != null ? mScores.performance : null;
+            updateOverviewDoughnut('overviewPsMobileChart', 'ovPsMobileScoreCenter', 'ovPsMobileStatusBadge', mScore);
+
+            const dScores = desktopData?.scores || {};
+            const dScore = dScores.performance != null ? dScores.performance : null;
+            updateOverviewDoughnut('overviewPsDesktopChart', 'ovPsDesktopScoreCenter', 'ovPsDesktopStatusBadge', dScore);
+        }
+
+        function updateOverviewDoughnut(chartId, centerId, badgeId, score) {
+            const scoreCenter = document.getElementById(centerId);
+            const badge = document.getElementById(badgeId);
+
+            if (scoreCenter) {
+                scoreCenter.textContent = score != null ? score : '—';
+            }
+
+            if (badge) {
+                if (score == null) {
+                    badge.textContent = '—';
+                    badge.className = 'gsc-position-badge gsc-pos-mid';
+                } else if (score >= 90) {
+                    badge.textContent = 'Good';
+                    badge.className = 'gsc-position-badge gsc-pos-top';
+                } else if (score >= 50) {
+                    badge.textContent = 'Needs Imp.';
+                    badge.className = 'gsc-position-badge gsc-pos-mid';
+                } else {
+                    badge.textContent = 'Poor';
+                    badge.className = 'gsc-position-badge gsc-pos-low';
+                }
+            }
+
+            const ctx = document.getElementById(chartId);
+            if (!ctx) return;
+
+            let borderCol = '#eef1f7'; // Neutral background circle color
+            if (score != null) {
+                if (score >= 90) borderCol = '#12b47a';
+                else if (score >= 50) borderCol = '#f59e0b';
+                else borderCol = '#e5403c';
+            }
+
+            const data = {
+                labels: ['Score', 'Remaining'],
+                datasets: [{
+                    data: score != null ? [score, 100 - score] : [0, 100],
+                    backgroundColor: [borderCol, 'rgba(238,241,247,0.8)'],
+                    borderWidth: 0,
+                    hoverOffset: 0
+                }]
+            };
+
+            const options = {
+                cutout: '75%',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataIndex === 0) {
+                                    return score != null ? ` Performance: ${score}/100` : ' Not analyzed';
+                                }
+                                return null;
+                            }
+                        }
+                    }
+                }
+            };
+
+            makeChart(chartId, 'doughnut', data, options);
         }
 
         // Attach listeners for Page Performance controls
