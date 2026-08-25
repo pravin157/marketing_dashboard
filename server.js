@@ -25,6 +25,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/benchmarks_config.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'benchmarks_config.js'));
+});
+
 // GET /api/data
 // Fetches fresh analytics data on demand and returns it directly.
 app.get('/api/data', async (req, res) => {
