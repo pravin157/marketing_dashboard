@@ -296,19 +296,56 @@ function processIgMedia(rawMedia) {
 async function getGA4Metrics(startDate = '30daysAgo', endDate = 'today') {
   if (!analyticsData) return [];
   try {
-    const res = await analyticsData.properties.runReport({
-      property: `properties/${NORMALIZED_GA_PROPERTY_ID}`,
-      requestBody: {
-        dateRanges: [{ startDate, endDate }],
-        dimensions: [{ name: 'date' }],
-        metrics: [
-          { name: 'activeUsers' }, { name: 'newUsers' }, { name: 'sessions' },
-          { name: 'screenPageViews' }, { name: 'bounceRate' },
-          { name: 'averageSessionDuration' }, { name: 'conversions' }
-        ]
+    const [res, demoRes] = await Promise.all([
+      analyticsData.properties.runReport({
+        property: `properties/${NORMALIZED_GA_PROPERTY_ID}`,
+        requestBody: {
+          dateRanges: [{ startDate, endDate }],
+          dimensions: [{ name: 'date' }],
+          metrics: [
+            { name: 'activeUsers' }, { name: 'newUsers' }, { name: 'sessions' },
+            { name: 'screenPageViews' }, { name: 'bounceRate' },
+            { name: 'averageSessionDuration' }, { name: 'conversions' }
+          ]
+        }
+      }),
+      analyticsData.properties.runReport({
+        property: `properties/${NORMALIZED_GA_PROPERTY_ID}`,
+        requestBody: {
+          dateRanges: [{ startDate, endDate }],
+          dimensions: [{ name: 'date' }],
+          metrics: [{ name: 'screenPageViews' }],
+          dimensionFilter: {
+            filter: {
+              fieldName: 'pagePath',
+              stringFilter: {
+                matchType: 'CONTAINS',
+                value: 'demo',
+                caseSensitive: false
+              }
+            }
+          }
+        }
+      }).catch(err => { console.error('❌ GA4 demo metrics:', err.message); return { data: {} }; })
+    ]);
+
+    const rows = res.data.rows || [];
+    const demoRows = demoRes.data?.rows || [];
+    const demoMap = {};
+    demoRows.forEach(r => {
+      const date = r.dimensionValues[0]?.value;
+      const views = +r.metricValues[0]?.value || 0;
+      if (date) {
+        demoMap[date] = (demoMap[date] || 0) + views;
       }
     });
-    return res.data.rows || [];
+
+    rows.forEach(row => {
+      const date = row.dimensionValues[0]?.value;
+      row.demoViews = demoMap[date] || 0;
+    });
+
+    return rows;
   } catch (err) { console.error('❌ GA4 metrics:', err.message); return []; }
 }
 
@@ -608,7 +645,8 @@ function shapeDashboardPayload({ fbData, igData, gaData, ytData, liData = null, 
       views: +row.metricValues[3].value,
       bounceRate: +parseFloat(row.metricValues[4].value).toFixed(2),
       dur: +parseFloat(row.metricValues[5].value).toFixed(1),
-      conversions: +row.metricValues[6].value
+      conversions: +row.metricValues[6].value,
+      demoViews: row.demoViews || 0
     })).sort((a, b) => a.date.localeCompare(b.date));
   }
 
@@ -798,6 +836,23 @@ function buildGA4DimensionFilter(filters) {
   };
 }
 
+function combineDimensionFilters(filter1, filter2) {
+  if (!filter1) return filter2;
+  if (!filter2) return filter1;
+  const expressions = [];
+  if (filter1.andGroup && filter1.andGroup.expressions) {
+    expressions.push(...filter1.andGroup.expressions);
+  } else {
+    expressions.push(filter1);
+  }
+  if (filter2.andGroup && filter2.andGroup.expressions) {
+    expressions.push(...filter2.andGroup.expressions);
+  } else {
+    expressions.push(filter2);
+  }
+  return { andGroup: { expressions } };
+}
+
 export async function getFilteredGA4Data(filters = {}, startDate = '90daysAgo', endDate = 'today') {
   initGoogle();
   if (!analyticsData || !NORMALIZED_GA_PROPERTY_ID) {
@@ -853,28 +908,64 @@ export async function getFilteredGA4Data(filters = {}, startDate = '90daysAgo', 
     ...(dimensionFilter ? { dimensionFilter } : {})
   };
 
-  const [metricsRes, trafficRes, pagesRes, countriesRes] = await Promise.all([
+  const combinedDemoFilter = combineDimensionFilters(
+    {
+      filter: {
+        fieldName: 'pagePath',
+        stringFilter: {
+          matchType: 'CONTAINS',
+          value: 'demo',
+          caseSensitive: false
+        }
+      }
+    },
+    dimensionFilter
+  );
+
+  const requestBodyDemo = {
+    dateRanges: [{ startDate, endDate }],
+    dimensions: [{ name: 'date' }],
+    metrics: [{ name: 'screenPageViews' }],
+    ...(combinedDemoFilter ? { dimensionFilter: combinedDemoFilter } : {})
+  };
+
+  const [metricsRes, trafficRes, pagesRes, countriesRes, demoRes] = await Promise.all([
     analyticsData.properties.runReport({ property: `properties/${NORMALIZED_GA_PROPERTY_ID}`, requestBody: requestBodyMetrics }).catch(err => { console.error('❌ Filtered GA4 metrics:', err.message); return { data: {} }; }),
     analyticsData.properties.runReport({ property: `properties/${NORMALIZED_GA_PROPERTY_ID}`, requestBody: requestBodyTraffic }).catch(err => { console.error('❌ Filtered GA4 traffic:', err.message); return { data: {} }; }),
     analyticsData.properties.runReport({ property: `properties/${NORMALIZED_GA_PROPERTY_ID}`, requestBody: requestBodyPages }).catch(err => { console.error('❌ Filtered GA4 pages:', err.message); return { data: {} }; }),
-    analyticsData.properties.runReport({ property: `properties/${NORMALIZED_GA_PROPERTY_ID}`, requestBody: requestBodyCountries }).catch(err => { console.error('❌ Filtered GA4 countries:', err.message); return { data: {} }; })
+    analyticsData.properties.runReport({ property: `properties/${NORMALIZED_GA_PROPERTY_ID}`, requestBody: requestBodyCountries }).catch(err => { console.error('❌ Filtered GA4 countries:', err.message); return { data: {} }; }),
+    analyticsData.properties.runReport({ property: `properties/${NORMALIZED_GA_PROPERTY_ID}`, requestBody: requestBodyDemo }).catch(err => { console.error('❌ Filtered GA4 demo views:', err.message); return { data: {} }; })
   ]);
 
   const metricsRows = metricsRes.data?.rows || [];
   const trafficRows = trafficRes.data?.rows || [];
   const pagesRows = pagesRes.data?.rows || [];
   const countriesRows = countriesRes.data?.rows || [];
+  const demoRows = demoRes.data?.rows || [];
 
-  const GA4_DAILY = metricsRows.map(row => ({
-    date: row.dimensionValues[0].value.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
-    users: +row.metricValues[0].value,
-    newUsers: +row.metricValues[1].value,
-    sessions: +row.metricValues[2].value,
-    views: +row.metricValues[3].value,
-    bounceRate: +parseFloat(row.metricValues[4].value).toFixed(2),
-    dur: +parseFloat(row.metricValues[5].value).toFixed(1),
-    conversions: +row.metricValues[6].value
-  })).sort((a, b) => a.date.localeCompare(b.date));
+  const demoMap = {};
+  demoRows.forEach(r => {
+    const date = r.dimensionValues[0]?.value;
+    const views = +r.metricValues[0]?.value || 0;
+    if (date) {
+      demoMap[date] = (demoMap[date] || 0) + views;
+    }
+  });
+
+  const GA4_DAILY = metricsRows.map(row => {
+    const dateRaw = row.dimensionValues[0].value;
+    return {
+      date: dateRaw.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'),
+      users: +row.metricValues[0].value,
+      newUsers: +row.metricValues[1].value,
+      sessions: +row.metricValues[2].value,
+      views: +row.metricValues[3].value,
+      bounceRate: +parseFloat(row.metricValues[4].value).toFixed(2),
+      dur: +parseFloat(row.metricValues[5].value).toFixed(1),
+      conversions: +row.metricValues[6].value,
+      demoViews: demoMap[dateRaw] || 0
+    };
+  }).sort((a, b) => a.date.localeCompare(b.date));
 
   const GA4_CHANNELS = trafficRows.map(r => ({
     channel: r.dimensionValues[0].value,

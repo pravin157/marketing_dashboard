@@ -10,6 +10,7 @@
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="benchmarks_config.js"></script>
     <style>
         :root {
             --primary: #0066cc;
@@ -81,6 +82,33 @@
         select,
         input {
             transition: background-color .25s, color .25s, border-color .25s, box-shadow .25s;
+        }
+
+        /* SaaS Benchmarks Badge Styles */
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-below {
+            background-color: var(--down-bg);
+            color: var(--down);
+        }
+        .status-within {
+            background-color: var(--up-bg);
+            color: var(--up);
+        }
+        .status-above {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+        .status-none {
+            background-color: var(--neutral-bg);
+            color: var(--neutral);
         }
 
         .header {
@@ -2245,6 +2273,33 @@
                     </table>
                     <div class="no-data" id="gaPagesNoData" style="display:none;">No page-view data available for this property</div>
                 </div>
+
+                <!-- AEC SAAS BENCHMARKS CARD -->
+                <div class="card" style="margin-bottom:20px;" id="gaBenchmarksCard">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <div class="card-title">AEC SaaS Benchmarks</div>
+                            <div class="card-subtitle">Performance compared to SaaS industry standards</div>
+                        </div>
+                        <div class="profile-tag" style="background: var(--primary-light); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;" id="gaBenchmarkProfileTag">AEC SaaS Profile</div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th style="text-align:right;" id="gaBenchCurrentHeader">Current Period</th>
+                                <th style="text-align:right;" id="gaBenchPreviousHeader">Previous Period</th>
+                                <th style="text-align:right;">WoW Δ</th>
+                                <th>AEC SaaS Benchmark</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gaBenchmarksTable">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                    <div class="no-data" id="gaBenchmarksNoData" style="display:none;">No benchmark data available for this property</div>
+                </div>
             </div>
         </section>
 
@@ -3638,6 +3693,153 @@
                             tr.innerHTML = `<td><span class="rank-badge">${i + 1}</span></td><td><span class="page-name">${p.path}</span></td><td>${fmt(p.views)}</td><td>${p.duration}s</td>`;
                             ovTP.appendChild(tr);
                         });
+                    }
+                }
+
+                // ── SaaS Benchmarks Table ──
+                const gaBenchTbl = document.getElementById('gaBenchmarksTable');
+                const gaBenchND = document.getElementById('gaBenchmarksNoData');
+                if (gaBenchTbl) {
+                    gaBenchTbl.innerHTML = '';
+                    if (!gaF.length) {
+                        if (gaBenchND) gaBenchND.style.display = 'block';
+                    } else {
+                        if (gaBenchND) gaBenchND.style.display = 'none';
+
+                        // Set active profile tag
+                        const profileTag = document.getElementById('gaBenchmarkProfileTag');
+                        if (profileTag && typeof ACTIVE_BENCHMARK_PROFILE !== 'undefined') {
+                            profileTag.textContent = `${ACTIVE_BENCHMARK_PROFILE} Profile`;
+                        }
+
+                        // Calculate date ranges
+                        const currentStart = start;
+                        const currentEnd = end;
+
+                        // Helper to get previous period
+                        const getPrevPeriod = (startStr, endStr) => {
+                            const s = new Date(startStr + 'T00:00:00Z');
+                            const e = new Date(endStr + 'T00:00:00Z');
+                            const dur = e.getTime() - s.getTime() + 86400000;
+                            const prevEnd = new Date(s.getTime() - 86400000);
+                            const prevStart = new Date(prevEnd.getTime() - dur + 86400000);
+                            const iso = d => d.toISOString().slice(0, 10);
+                            return { start: iso(prevStart), end: iso(prevEnd) };
+                        };
+
+                        const prevPeriod = getPrevPeriod(currentStart, currentEnd);
+
+                        // Update table header date ranges
+                        const shortCurrent = formatShortDateRange(currentStart, currentEnd);
+                        const shortPrevious = formatShortDateRange(prevPeriod.start, prevPeriod.end);
+                        document.getElementById('gaBenchCurrentHeader').textContent = shortCurrent;
+                        document.getElementById('gaBenchPreviousHeader').textContent = shortPrevious;
+
+                        // Filter data rows for each period
+                        const currentRows = GA4_DAILY.filter(d => d.date >= currentStart && d.date <= currentEnd);
+                        const previousRows = GA4_DAILY.filter(d => d.date >= prevPeriod.start && d.date <= prevPeriod.end);
+
+                        // Helper to format short date range (e.g. Aug 17–23)
+                        function formatShortDateRange(startStr, endStr) {
+                            const s = new Date(startStr + 'T00:00:00Z');
+                            const e = new Date(endStr + 'T00:00:00Z');
+                            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                            const sm = months[s.getUTCMonth()];
+                            const em = months[e.getUTCMonth()];
+                            const sd = s.getUTCDate();
+                            const ed = e.getUTCDate();
+                            return sm === em ? `${sm} ${sd}–${ed}` : `${sm} ${sd} – ${em} ${ed}`;
+                        }
+
+                        // Calculate metrics values
+                        const calcMetrics = (rows) => {
+                            const u = rows.reduce((s, r) => s + (r.users || 0), 0);
+                            const v = rows.reduce((s, r) => s + (r.views || 0), 0);
+                            const s = rows.reduce((s, r) => s + (r.sessions || 0), 0);
+                            const d = rows.reduce((s, r) => s + ((r.dur || 0) * (r.sessions || 0)), 0);
+                            const demo = rows.reduce((s, r) => s + (r.demoViews || 0), 0);
+
+                            return {
+                                users: u,
+                                avg_engagement_time: s > 0 ? (d / s) : 0,
+                                views_per_user: u > 0 ? (v / u) : 0,
+                                demo_page_views: demo
+                            };
+                        };
+
+                        const currVals = calcMetrics(currentRows);
+                        const prevVals = calcMetrics(previousRows);
+
+                        // Format metric values for display
+                        const formatVal = (key, val, isEmpty = false) => {
+                            if (isEmpty || val === null || val === undefined || isNaN(val) || val === 0) {
+                                return '—';
+                            }
+                            if (key === 'avg_engagement_time') {
+                                return `${Math.round(val)}s`;
+                            }
+                            if (key === 'views_per_user') {
+                                return val.toFixed(2);
+                            }
+                            return fmt(Math.round(val));
+                        };
+
+                        // Render each metric row defined in the profile
+                        const profile = window.BenchmarkService ? window.BenchmarkService.getProfile() : null;
+                        if (profile && profile.metrics) {
+                            Object.keys(profile.metrics).forEach(metricKey => {
+                                const metricConfig = profile.metrics[metricKey];
+                                const currRawVal = currVals[metricKey];
+                                const prevRawVal = prevVals[metricKey];
+
+                                // Check if we have previous data for WoW calculation
+                                const hasPrevData = previousRows.length > 0 && prevRawVal > 0;
+                                const isCurrEmpty = currentRows.length === 0;
+
+                                const currDisp = formatVal(metricKey, currRawVal, isCurrEmpty);
+                                const prevDisp = formatVal(metricKey, prevRawVal, !hasPrevData);
+
+                                // WoW Delta
+                                let wowDeltaHtml = '<span style="color:var(--text2);">—</span>';
+                                if (!isCurrEmpty && hasPrevData) {
+                                    const pct = ((currRawVal - prevRawVal) / prevRawVal) * 100;
+                                    const arrow = pct > 0.1 ? '▲' : pct < -0.1 ? '▼' : '–';
+                                    const color = pct > 0.1 ? 'var(--up)' : pct < -0.1 ? 'var(--down)' : 'var(--text2)';
+                                    const prefix = pct > 0.1 ? '+' : '';
+                                    wowDeltaHtml = `<span style="color:${color}; font-weight:600;">${arrow} ${prefix}${pct.toFixed(1)}%</span>`;
+                                }
+
+                                // Benchmark Comparison & Status
+                                let benchmarkDisp = metricConfig.label || '—';
+                                let statusBadgeHtml = '';
+
+                                if (window.BenchmarkService) {
+                                    const result = window.BenchmarkService.compare(metricKey, currRawVal);
+                                    let badgeClass = 'status-none';
+                                    if (result.status === 'Below benchmark') badgeClass = 'status-below';
+                                    else if (result.status === 'Within benchmark') badgeClass = 'status-within';
+                                    else if (result.status === 'Above benchmark') badgeClass = 'status-above';
+
+                                    // Display status badge if it's not a "none" benchmark
+                                    if (metricConfig.type !== 'none' && metricConfig.type !== 'signal') {
+                                        statusBadgeHtml = `<span class="status-badge ${badgeClass}">${result.status}</span>`;
+                                    } else {
+                                        statusBadgeHtml = `<span class="status-badge status-none">${result.status}</span>`;
+                                    }
+                                }
+
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `
+                                    <td style="font-weight: 500;">${metricConfig.name}</td>
+                                    <td style="text-align:right; font-weight: 600;">${currDisp}</td>
+                                    <td style="text-align:right; color:var(--text2);">${prevDisp}</td>
+                                    <td style="text-align:right;">${wowDeltaHtml}</td>
+                                    <td>${benchmarkDisp}</td>
+                                    <td>${statusBadgeHtml}</td>
+                                `;
+                                gaBenchTbl.appendChild(tr);
+                            });
+                        }
                     }
                 }
 
