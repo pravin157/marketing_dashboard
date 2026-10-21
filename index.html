@@ -13,29 +13,29 @@
     <script src="benchmarks_config.js"></script>
     <style>
         :root {
-            --primary: #0066cc;
-            --primary-light: #e8f2ff;
-            --primary-mid: #cce0ff;
-            --teal: #00cccc;
-            --teal-light: #e0fafa;
-            --teal-mid: #b3f0f0;
-            --white: #ffffff;
-            --bg: #f5f7fb;
-            --bg2: #eef1f7;
-            --border: #dde3ef;
-            --border-light: #eef1f7;
-            --text: #0d1a2e;
-            --text2: #3a4a62;
-            --muted: #7080a0;
-            --muted2: #a0aec0;
-            --up: #12b47a;
-            --up-bg: #e6faf3;
-            --down: #e5403c;
-            --down-bg: #fdf0ef;
-            --warn: #f59e0b;
-            --warn-bg: #fef3c7;
-            --neutral: #6b7a99;
-            --neutral-bg: #f0f2f7;
+            --primary: #4c8dff;
+            --primary-light: rgba(76, 141, 255, .16);
+            --primary-mid: rgba(76, 141, 255, .38);
+            --teal: #2dd4bf;
+            --teal-light: rgba(45, 212, 191, .14);
+            --teal-mid: rgba(45, 212, 191, .32);
+            --white: #161c27;
+            --bg: #0c1017;
+            --bg2: #1c2433;
+            --border: #2a3346;
+            --border-light: #222a3a;
+            --text: #e7eef8;
+            --text2: #b7c3d6;
+            --muted: #8b9bb4;
+            --muted2: #6d7d96;
+            --up: #3dd68c;
+            --up-bg: rgba(61, 214, 140, .14);
+            --down: #f07178;
+            --down-bg: rgba(240, 113, 120, .14);
+            --warn: #f5b942;
+            --warn-bg: rgba(245, 185, 66, .16);
+            --neutral: #9aa8bf;
+            --neutral-bg: #1c2433;
             --radius: 12px;
             --radius-sm: 8px;
             --shadow: 0 1px 3px rgba(0, 102, 204, .06), 0 4px 16px rgba(0, 102, 204, .04);
@@ -44,8 +44,8 @@
             --font-display: 'Sora', sans-serif;
             --font-mono: 'DM Mono', monospace;
             --primary-text: var(--primary);
-            --teal-text: #007a7a;
-            --warn-text: #92400e;
+            --teal-text: #5eead4;
+            --warn-text: #f6c56b;
             --down-text: var(--down);
             --kpi-grad-1: linear-gradient(135deg, var(--primary), #0052aa);
             --kpi-grad-2: linear-gradient(135deg, var(--teal), #009999);
@@ -64,12 +64,75 @@
             padding: 0;
         }
 
+        html { color-scheme: dark; }
+
         body {
             font-family: var(--font);
             background: var(--bg);
             color: var(--text);
             font-size: 14px;
             line-height: 1.5;
+        }
+
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+            align-items: flex-start;
+        }
+
+        .sidebar {
+            width: 248px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            background: #10151e;
+            border-right: 1px solid var(--border);
+            padding: 22px 14px 28px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 22px;
+        }
+
+        .brand-mark {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), #2563eb);
+        }
+
+        .brand-sub {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .side-label {
+            margin: 16px 10px 6px;
+            font-family: var(--font-mono);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--muted2);
+        }
+
+        .app-main {
+            flex: 1;
+            min-width: 0;
         }
 
         div,
@@ -250,8 +313,8 @@
 
         .refresh-toast {
             position: fixed;
-            top: 74px;
-            right: 32px;
+            bottom: 24px;
+            right: 24px;
             z-index: 500;
             background: var(--white);
             border: 1px solid var(--border);
@@ -386,43 +449,30 @@
             color: #fff;
         }
 
-        .nav-bar {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 0 32px;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            overflow-x: auto;
-            position: sticky;
-            top: 108px;
-            z-index: 100;
-        }
-
         .nav-tab {
             display: flex;
             align-items: center;
-            gap: 7px;
-            padding: 14px 16px 12px;
+            gap: 8px;
+            padding: 9px 12px;
+            margin-bottom: 2px;
             font-size: 13px;
             font-weight: 500;
-            color: var(--muted);
+            color: var(--text2);
             cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all .2s;
-            white-space: nowrap;
+            border-radius: 8px;
+            border: 1px solid transparent;
             user-select: none;
-            flex-shrink: 0;
         }
 
         .nav-tab:hover {
-            color: var(--primary);
-            background: var(--primary-light);
+            color: var(--text);
+            background: var(--bg2);
         }
 
         .nav-tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
+            color: #fff;
+            background: var(--primary-light);
+            border-color: var(--primary-mid);
             font-weight: 600;
         }
 
@@ -1351,12 +1401,20 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+            .app-shell { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .sidebar-nav { display: flex; gap: 6px; overflow-x: auto; }
+            .side-label { display: none; }
+            .nav-tab { margin-bottom: 0; white-space: nowrap; }
+
             .filter-bar {
                 top: 54px;
-            }
-
-            .nav-bar {
-                top: 100px;
             }
 
             .header {
@@ -1599,15 +1657,15 @@
             font-weight: 500;
             padding: 4px 10px;
             border-radius: 16px;
-            background: #e8f2ff;
-            color: #0052aa;
-            border: 1px solid #cce0ff;
+            background: var(--primary-light);
+            color: var(--primary);
+            border: 1px solid var(--primary-mid);
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
         }
 
         .ga-chip-category {
             font-weight: 600;
-            color: #0d1a2e;
+            color: var(--text);
         }
 
         .ga-chip-close {
@@ -1654,8 +1712,8 @@
             z-index: 400;
             width: 340px;
             max-width: 90vw;
-            background: #ffffff;
-            border: 1px solid #dadce0;
+            background: var(--white);
+            border: 1px solid var(--border);
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
             overflow: hidden;
@@ -1676,16 +1734,16 @@
 
         .ga-fd-header {
             padding: 12px 14px;
-            border-bottom: 1px solid #f1f3f4;
-            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
         }
 
         .ga-fd-search-box {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: #ffffff;
-            border: 1px solid #dadce0;
+            background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 6px 10px;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1702,7 +1760,7 @@
             outline: none;
             font-family: var(--font);
             font-size: 13px;
-            color: #202124;
+            color: var(--text);
             background: transparent;
         }
 
@@ -1740,7 +1798,7 @@
         }
 
         .ga-fd-menu-item:hover {
-            background: #f1f3f4;
+            background: var(--bg2);
         }
 
         .ga-fd-item-icon {
@@ -1752,7 +1810,7 @@
             flex: 1;
             font-weight: 500;
             font-size: 13.5px;
-            color: #202124;
+            color: var(--text);
         }
 
         .ga-fd-item-arrow {
@@ -1770,13 +1828,13 @@
             font-weight: 600;
             color: #1a73e8;
             cursor: pointer;
-            border-bottom: 1px solid #f1f3f4;
-            background: #f8f9fa;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
             user-select: none;
         }
 
         .ga-fd-nav-back:hover {
-            background: #e8f0fe;
+            background: var(--primary-light);
         }
 
         .ga-fd-values-header {
@@ -1784,7 +1842,7 @@
             font-size: 11.5px;
             font-weight: 500;
             color: #5f6368;
-            border-bottom: 1px solid #f1f3f4;
+            border-bottom: 1px solid var(--border);
         }
 
         .ga-fd-loading {
@@ -1815,13 +1873,13 @@
             padding: 7px 16px;
             cursor: pointer;
             font-size: 13px;
-            color: #202124;
+            color: var(--text);
             user-select: none;
             transition: background 0.15s ease;
         }
 
         .ga-fd-value-checkbox-item:hover {
-            background: #f1f3f4;
+            background: var(--bg2);
         }
 
         .ga-fd-value-checkbox-item input[type="checkbox"] {
@@ -1841,8 +1899,8 @@
 
         .ga-fd-footer {
             padding: 10px 14px;
-            border-top: 1px solid #f1f3f4;
-            background: #fafafa;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
             display: flex;
             justify-content: flex-end;
         }
@@ -1868,11 +1926,38 @@
 
 <body>
 
+    <div class="app-shell">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-mark">IA</span>
+            <div>
+                <div class="brand-logo">IntoAEC</div>
+                <div class="brand-sub">Analytics</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="side-label">Overview</div>
+            <div class="nav-tab active" data-tab="overview"><span class="tab-icon">🏠</span>Overview</div>
+
+            <div class="side-label">Website</div>
+            <div class="nav-tab" data-tab="ga"><span class="tab-icon">🌐</span>Google Analytics</div>
+            <div class="nav-tab" data-tab="gsc"><span class="tab-icon">🔍</span>Search Console</div>
+            <div class="nav-tab" data-tab="page-performance"><span class="tab-icon">⚡</span>Page Performance</div>
+
+            <div class="side-label">Social</div>
+            <div class="nav-tab" data-tab="fb"><span class="tab-icon">📘</span>Facebook</div>
+            <div class="nav-tab" data-tab="ig"><span class="tab-icon">📸</span>Instagram</div>
+            <div class="nav-tab" data-tab="yt"><span class="tab-icon">▶️</span>YouTube</div>
+
+            <div class="side-label">Compare</div>
+            <div class="nav-tab" data-tab="weekly"><span class="tab-icon">📊</span>Weekly Comparison</div>
+        </nav>
+    </aside>
+    <div class="app-main">
+
     <div class="header">
         <div class="header-left">
-            <span class="brand-logo">IntoAEC</span>
-            <div class="header-divider"></div>
-            <span class="header-title">Social Media Analytics</span>
+            <span class="header-title">Marketing dashboard</span>
         </div>
         <div class="header-right">
             <span class="data-source-pill source-waiting" id="dataSourcePill">⏳ No Data Yet</span>
@@ -1903,17 +1988,6 @@
             <button class="apply-btn" id="applyCustom">Apply</button>
         </div>
         <span class="filter-info" id="filterInfo">Showing last 31 days</span>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-tab active" data-tab="overview"><span class="tab-icon">🏠</span>Overview</div>
-        <div class="nav-tab" data-tab="ga"><span class="tab-icon">🌐</span>Google Analytics</div>
-        <div class="nav-tab" data-tab="fb"><span class="tab-icon">📘</span>Facebook</div>
-        <div class="nav-tab" data-tab="ig"><span class="tab-icon">📸</span>Instagram</div>
-        <div class="nav-tab" data-tab="yt"><span class="tab-icon">▶️</span>YouTube</div>
-        <div class="nav-tab" data-tab="gsc"><span class="tab-icon">🔍</span>Search Console</div>
-        <div class="nav-tab" data-tab="page-performance"><span class="tab-icon">⚡</span>Page Performance</div>
-        <div class="nav-tab" data-tab="weekly"><span class="tab-icon">📊</span>Weekly Comparison</div>
     </div>
 
     <div class="content">
@@ -2798,7 +2872,7 @@
                                         style="border-radius: 4px; padding: 4px 8px; font-size: 11px; width: 130px; height: 28px;"
                                         placeholder="Filter queries...">
                                     <select id="gscQueryPageSize" class="gsc-control-input"
-                                        style="border-radius: 4px; padding: 4px; font-size: 11px; width: 80px; height: 28px; background: #fff;">
+                                        style="border-radius: 4px; padding: 4px; font-size: 11px; width: 80px; height: 28px; background: var(--bg); color: var(--text); border: 1px solid var(--border);">
                                         <option value="5">5 / pg</option>
                                         <option value="10" selected>10 / pg</option>
                                         <option value="25">25 / pg</option>
@@ -3052,7 +3126,7 @@
                                         2.5s</span>
                                 </div>
                                 <div
-                                    style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #eef1f7; margin-bottom: 10px;">
+                                    style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #2a3346; margin-bottom: 10px;">
                                     <div id="vitalsLcpBarGood"
                                         style="background: #12b47a; width: 0%; transition: width 0.4s;"></div>
                                     <div id="vitalsLcpBarNi"
@@ -3101,7 +3175,7 @@
                                         200ms</span>
                                 </div>
                                 <div
-                                    style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #eef1f7; margin-bottom: 10px;">
+                                    style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #2a3346; margin-bottom: 10px;">
                                     <div id="vitalsInpBarGood"
                                         style="background: #12b47a; width: 0%; transition: width 0.4s;"></div>
                                     <div id="vitalsInpBarNi"
@@ -3150,7 +3224,7 @@
                                         0.10</span>
                                 </div>
                                 <div
-                                    style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #eef1f7; margin-bottom: 10px;">
+                                    style="height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #2a3346; margin-bottom: 10px;">
                                     <div id="vitalsClsBarGood"
                                         style="background: #12b47a; width: 0%; transition: width 0.4s;"></div>
                                     <div id="vitalsClsBarNi"
@@ -3351,7 +3425,7 @@
                                         <div style="width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid #5f6368; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.15);"></div>
                                         <div style="width: 1.5px; height: 8px; background: #5f6368;"></div>
                                     </div>
-                                    <div style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: #eef1f7;">
+                                    <div style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: #2a3346;">
                                         <div id="psLcpBarGood" style="background: #12b47a; width: 0%; transition: width 0.4s; border-radius: 3px 0 0 3px;"></div>
                                         <div id="psLcpBarNi" style="background: #f59e0b; width: 0%; transition: width 0.4s;"></div>
                                         <div id="psLcpBarPoor" style="background: #e5403c; width: 0%; transition: width 0.4s; border-radius: 0 3px 3px 0;"></div>
@@ -3385,7 +3459,7 @@
                                         <div style="width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid #5f6368; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.15);"></div>
                                         <div style="width: 1.5px; height: 8px; background: #5f6368;"></div>
                                     </div>
-                                    <div style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: #eef1f7;">
+                                    <div style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: #2a3346;">
                                         <div id="psInpBarGood" style="background: #12b47a; width: 0%; transition: width 0.4s; border-radius: 3px 0 0 3px;"></div>
                                         <div id="psInpBarNi" style="background: #f59e0b; width: 0%; transition: width 0.4s;"></div>
                                         <div id="psInpBarPoor" style="background: #e5403c; width: 0%; transition: width 0.4s; border-radius: 0 3px 3px 0;"></div>
@@ -3419,7 +3493,7 @@
                                         <div style="width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid #5f6368; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.15);"></div>
                                         <div style="width: 1.5px; height: 8px; background: #5f6368;"></div>
                                     </div>
-                                    <div style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: #eef1f7;">
+                                    <div style="height: 6px; border-radius: 3px; overflow: hidden; display: flex; gap: 2px; background: #2a3346;">
                                         <div id="psClsBarGood" style="background: #12b47a; width: 0%; transition: width 0.4s; border-radius: 3px 0 0 3px;"></div>
                                         <div id="psClsBarNi" style="background: #f59e0b; width: 0%; transition: width 0.4s;"></div>
                                         <div id="psClsBarPoor" style="background: #e5403c; width: 0%; transition: width 0.4s; border-radius: 0 3px 3px 0;"></div>
@@ -3475,6 +3549,8 @@
             <span id="footerRange">No data loaded — click Refresh Live Data</span>
         </div>
     </div>
+    </div>
+    </div>
 
     <script>
         // ── Data state (all empty on load) ──────────────────────────────────────────
@@ -3520,6 +3596,10 @@
         }
 
         // ── Charts ────────────────────────────────────────────────────────────────────
+        if (window.Chart) {
+            Chart.defaults.color = '#8b9bb4';
+            Chart.defaults.borderColor = '#2a3346';
+        }
         const charts = {};
         const C = {
             blue: '#0066cc', teal: '#00cccc', up: '#12b47a', warn: '#f59e0b',
@@ -3535,7 +3615,7 @@
         const baseOpts = (showLegend = false) => ({
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: showLegend, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false } },
-            scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7080a0', maxRotation: 45 } }, y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 }, color: '#7080a0' } } }
+            scales: { x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7080a0', maxRotation: 45 } }, y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 }, color: '#7080a0' } } }
         });
         function fmt(n) { return (n || 0).toLocaleString(); }
 
@@ -3723,12 +3803,12 @@
                     datasets: [{ label: 'Avg Duration (s)', data: durF.map(d => Math.round(d.dur)), backgroundColor: `${C.up}bb`, borderRadius: 4 }]
                 }, {
                     ...baseOpts(), indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-                    scales: { x: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 } } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+                    scales: { x: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 } } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
                 });
 
                 if (GA4_CHANNELS.length) {
                     const chOpts = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString()}` } } } };
-                    const chDS = { labels: GA4_CHANNELS.map(c => c.channel), datasets: [{ data: GA4_CHANNELS.map(c => c.sessions), backgroundColor: C.mixed, borderWidth: 2, borderColor: '#fff' }] };
+                    const chDS = { labels: GA4_CHANNELS.map(c => c.channel), datasets: [{ data: GA4_CHANNELS.map(c => c.sessions), backgroundColor: C.mixed, borderWidth: 2, borderColor: '#161c27' }] };
                     makeChart('overviewChannelChart', 'doughnut', chDS, chOpts);
                     makeChart('gaChannelDoughnut', 'doughnut', chDS, { ...chOpts, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString()}` } } } });
                     makeChart('gaChannelBar', 'bar', {
@@ -3996,8 +4076,8 @@
                 const fbTC = {};
                 fbF.forEach(p => { fbTC[p.type] = (fbTC[p.type] || 0) + 1; });
                 const doughOpts = (pos = 'right') => ({ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: pos, labels: { font: { size: 10 }, boxWidth: 10 } } } });
-                makeChart('fbTypeChart', 'doughnut', { labels: Object.keys(fbTC), datasets: [{ data: Object.values(fbTC), backgroundColor: C.mixed.slice(0, Object.keys(fbTC).length), borderWidth: 2, borderColor: '#fff' }] }, doughOpts());
-                makeChart('fbPostTypeChart', 'doughnut', { labels: Object.keys(fbTC), datasets: [{ data: Object.values(fbTC), backgroundColor: C.mixed.slice(0, Object.keys(fbTC).length), borderWidth: 2, borderColor: '#fff' }] }, doughOpts('right'));
+                makeChart('fbTypeChart', 'doughnut', { labels: Object.keys(fbTC), datasets: [{ data: Object.values(fbTC), backgroundColor: C.mixed.slice(0, Object.keys(fbTC).length), borderWidth: 2, borderColor: '#161c27' }] }, doughOpts());
+                makeChart('fbPostTypeChart', 'doughnut', { labels: Object.keys(fbTC), datasets: [{ data: Object.values(fbTC), backgroundColor: C.mixed.slice(0, Object.keys(fbTC).length), borderWidth: 2, borderColor: '#161c27' }] }, doughOpts('right'));
 
                 const fbTop = [...fbF].sort((a, b) => b.likes - a.likes).slice(0, 10);
                 makeChart('fbTopPostsChart', 'bar', {
@@ -4052,7 +4132,7 @@
                 makeChart('igEngChart', 'bar', {
                     labels: igTopOv.map((_, i) => `#${i + 1}`),
                     datasets: [{ label: 'Likes', data: igTopOv.map(p => p.likes), backgroundColor: C.mixed.map(c => c + 'bb'), borderRadius: 4 }]
-                }, { ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 9 } } } } });
+                }, { ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { color: '#2a3346' }, ticks: { font: { size: 9 } } } } });
 
                 makeChart('igLikesTrendChart', 'line', {
                     labels: igF.map(p => p.date.slice(5)),
@@ -4061,14 +4141,14 @@
 
                 const igTC = { REELS: 0, FEED: 0 };
                 igF.forEach(p => { igTC[p.type] = (igTC[p.type] || 0) + 1; });
-                makeChart('igTypeChart', 'doughnut', { labels: ['Reels', 'Feed Posts'], datasets: [{ data: [igTC.REELS, igTC.FEED], backgroundColor: [C.purple, C.teal], borderWidth: 2, borderColor: '#fff' }] },
+                makeChart('igTypeChart', 'doughnut', { labels: ['Reels', 'Feed Posts'], datasets: [{ data: [igTC.REELS, igTC.FEED], backgroundColor: [C.purple, C.teal], borderWidth: 2, borderColor: '#161c27' }] },
                     { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 12 }, boxWidth: 12 } } } });
 
                 const reels = igF.filter(p => p.type === 'REELS'), feed = igF.filter(p => p.type === 'FEED');
                 const rAvg = reels.length ? +(reels.reduce((s, p) => s + p.likes, 0) / reels.length).toFixed(1) : 0;
                 const fAvg = feed.length ? +(feed.reduce((s, p) => s + p.likes, 0) / feed.length).toFixed(1) : 0;
                 makeChart('igTypeEngChart', 'bar', { labels: ['Avg Likes — Reels', 'Avg Likes — Feed'], datasets: [{ data: [rAvg, fAvg], backgroundColor: [`${C.purple}bb`, `${C.teal}bb`], borderRadius: 6 }] },
-                    { ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 } } } } });
+                    { ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 } } } } });
 
                 const igTbl = document.getElementById('igTopPostsTable');
                 const igND = document.getElementById('igNoData');
@@ -4111,12 +4191,12 @@
                     datasets: [{ label: 'Views', data: ytChron.map(v => v.views), backgroundColor: ytChron.map(v => v.type === 'SHORT' ? `${C.warn}cc` : `${C.down}cc`), borderRadius: 4 }]
                 }, {
                     ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false, callbacks: { title: items => { const v = ytChron[items[0].dataIndex]; return (v.title || '').length > 30 ? v.title.slice(0, 30) + '…' : v.title; }, label: ctx => `Views: ${ctx.parsed.y}` } } },
-                    scales: { x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 60 } }, y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 } } } }
+                    scales: { x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 60 } }, y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 } } } }
                 });
 
                 const ytTC = { SHORT: 0, LONG: 0 };
                 ytF.forEach(v => { ytTC[v.type] = (ytTC[v.type] || 0) + 1; });
-                makeChart('ytTypeChart', 'doughnut', { labels: ['Shorts', 'Long-form'], datasets: [{ data: [ytTC.SHORT, ytTC.LONG], backgroundColor: [C.warn, C.down], borderWidth: 2, borderColor: '#fff' }] },
+                makeChart('ytTypeChart', 'doughnut', { labels: ['Shorts', 'Long-form'], datasets: [{ data: [ytTC.SHORT, ytTC.LONG], backgroundColor: [C.warn, C.down], borderWidth: 2, borderColor: '#161c27' }] },
                     { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 12 }, boxWidth: 12 } } } });
 
                 const ytTbl = document.getElementById('ytVideosTable');
@@ -4152,7 +4232,7 @@
                 makeChart('audienceChart', 'bar', {
                     labels: ['IG Followers', 'FB Fans', 'YT Subs'],
                     datasets: [{ data: [SUMMARY.igFollowers || 0, SUMMARY.fbFans || 0, SUMMARY.ytSubscribers || 0], backgroundColor: [C.blue, C.teal, C.down], borderRadius: 6 }]
-                }, { ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 11 } } }, y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 } } } } });
+                }, { ...baseOpts(), plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 11 } } }, y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 } } } } });
             }
 
             renderWeeklyComparison();
@@ -4291,7 +4371,7 @@
                 const deviceColors = { desktop: '#0a66c2', mobile: '#1b8fe0', tablet: '#3aa3e3' };
                 makeChart('liDeviceChart', 'doughnut', {
                     labels: LI_DEVICES.map(d => d.device.charAt(0).toUpperCase() + d.device.slice(1)),
-                    datasets: [{ data: LI_DEVICES.map(d => d.sessions), backgroundColor: LI_DEVICES.map(d => deviceColors[d.device.toLowerCase()] || '#7080a0'), borderWidth: 2, borderColor: '#fff' }]
+                    datasets: [{ data: LI_DEVICES.map(d => d.sessions), backgroundColor: LI_DEVICES.map(d => deviceColors[d.device.toLowerCase()] || '#7080a0'), borderWidth: 2, borderColor: '#161c27' }]
                 }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.toLocaleString()} sessions` } } } });
 
                 // Bench list
@@ -4483,7 +4563,7 @@
                 plugins: { legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false } },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7080a0', maxRotation: 45 } },
-                    y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 }, color: '#34a853' }, position: 'left', title: { display: true, text: 'Clicks', font: { size: 10 }, color: '#34a853' } },
+                    y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 }, color: '#34a853' }, position: 'left', title: { display: true, text: 'Clicks', font: { size: 10 }, color: '#34a853' } },
                     y1: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#4285f4' }, position: 'right', title: { display: true, text: 'Impressions', font: { size: 10 }, color: '#4285f4' } }
                 }
             });
@@ -4516,7 +4596,7 @@
                 plugins: { legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false } },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7080a0', maxRotation: 45 } },
-                    y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 }, color: '#34a853' }, position: 'left', title: { display: true, text: 'Clicks', font: { size: 10 }, color: '#34a853' } },
+                    y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 }, color: '#34a853' }, position: 'left', title: { display: true, text: 'Clicks', font: { size: 10 }, color: '#34a853' } },
                     y1: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#4285f4' }, position: 'right', title: { display: true, text: 'Impressions', font: { size: 10 }, color: '#4285f4' } }
                 }
             });
@@ -4549,7 +4629,7 @@
                 plugins: { legend: { display: true, position: 'top', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { mode: 'index', intersect: false } },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#7080a0', maxRotation: 45 } },
-                    y: { grid: { color: '#eef1f7' }, ticks: { font: { size: 10 }, color: '#f59e0b' }, position: 'left', title: { display: true, text: 'CTR (%)', font: { size: 10 }, color: '#f59e0b' } },
+                    y: { grid: { color: '#2a3346' }, ticks: { font: { size: 10 }, color: '#f59e0b' }, position: 'left', title: { display: true, text: 'CTR (%)', font: { size: 10 }, color: '#f59e0b' } },
                     y1: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#e5403c' }, position: 'right', reverse: true, title: { display: true, text: 'Position (lower=better)', font: { size: 10 }, color: '#e5403c' } }
                 }
             });
@@ -4559,7 +4639,7 @@
                 const devColors = ['#34a853', '#4285f4', '#f59e0b', '#e5403c'];
                 makeChart('gscDeviceChart', 'doughnut', {
                     labels: d.devices.map(v => v.device.charAt(0).toUpperCase() + v.device.slice(1).toLowerCase()),
-                    datasets: [{ data: d.devices.map(v => v.clicks), backgroundColor: devColors, borderWidth: 2, borderColor: '#fff' }]
+                    datasets: [{ data: d.devices.map(v => v.clicks), backgroundColor: devColors, borderWidth: 2, borderColor: '#161c27' }]
                 }, {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)} clicks` } } },
@@ -4581,7 +4661,7 @@
                 const cColors = ['#0066cc', '#00cccc', '#34a853', '#f59e0b', '#e5403c', '#7c3aed', '#0088ee', '#ff6b35', '#12b47a', '#a855f7'];
                 makeChart('gscCountryChart', 'doughnut', {
                     labels: d.countries.map(v => v.country),
-                    datasets: [{ data: d.countries.map(v => v.clicks), backgroundColor: cColors, borderWidth: 2, borderColor: '#fff' }]
+                    datasets: [{ data: d.countries.map(v => v.clicks), backgroundColor: cColors, borderWidth: 2, borderColor: '#161c27' }]
                 }, {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: true, position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10 } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)} clicks` } } },
@@ -5902,7 +5982,7 @@
             const ctx = document.getElementById(chartId);
             if (!ctx) return;
 
-            let borderCol = '#eef1f7'; // Neutral background circle color
+            let borderCol = '#2a3346'; // Neutral background circle color
             if (score != null) {
                 if (score >= 90) borderCol = '#12b47a';
                 else if (score >= 50) borderCol = '#f59e0b';
@@ -6207,7 +6287,7 @@
             // Prepend "Select All" option
             const selectAllItem = document.createElement('label');
             selectAllItem.className = 'ga-fd-value-checkbox-item select-all-item';
-            selectAllItem.style.borderBottom = '1px solid #f1f3f4';
+            selectAllItem.style.borderBottom = '1px solid var(--border)';
             selectAllItem.style.paddingBottom = '9px';
             selectAllItem.style.marginBottom = '4px';
             selectAllItem.style.fontWeight = '600';
