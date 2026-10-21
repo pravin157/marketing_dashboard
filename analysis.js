@@ -994,6 +994,65 @@ export async function getFilteredGA4Data(filters = {}, startDate = '90daysAgo', 
   };
 }
 
+const GA4_PERIOD_METRICS = [
+  'activeUsers',
+  'newUsers',
+  'sessions',
+  'screenPageViews',
+  'conversions',
+  'averageSessionDuration'
+];
+
+function readGA4PeriodRow(row) {
+  const values = row?.metricValues || [];
+  const num = (index) => +(values[index]?.value || 0);
+  return {
+    users: num(0),
+    newUsers: num(1),
+    sessions: num(2),
+    views: num(3),
+    conversions: num(4),
+    avgSessionDuration: +num(5).toFixed(1)
+  };
+}
+
+/**
+ * Unique GA4 totals for one or more calendar ranges.
+ * activeUsers is not additive across days, so a range total has to be queried
+ * without a date dimension. Summing daily activeUsers over-counts return visitors.
+ */
+export async function getGA4PeriodTotals(ranges = [], filters = {}) {
+  initGoogle();
+  if (!analyticsData || !NORMALIZED_GA_PROPERTY_ID) {
+    throw new Error('GA4 not configured — check GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, and GA_PROPERTY_ID in .env');
+  }
+  if (!Array.isArray(ranges) || ranges.length === 0 || ranges.length > 4) {
+    throw new Error('Provide 1 to 4 date ranges');
+  }
+
+  const dimensionFilter = buildGA4DimensionFilter(filters);
+  const totals = {};
+
+  await Promise.all(ranges.map(async (range) => {
+    const startDate = String(range.startDate || '');
+    const endDate = String(range.endDate || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate) || startDate > endDate) {
+      throw new Error('Date ranges must be YYYY-MM-DD');
+    }
+    const res = await analyticsData.properties.runReport({
+      property: `properties/${NORMALIZED_GA_PROPERTY_ID}`,
+      requestBody: {
+        dateRanges: [{ startDate, endDate }],
+        metrics: GA4_PERIOD_METRICS.map(name => ({ name })),
+        ...(dimensionFilter ? { dimensionFilter } : {})
+      }
+    });
+    totals[range.name || `${startDate}_${endDate}`] = readGA4PeriodRow(res.data.rows?.[0]);
+  }));
+
+  return totals;
+}
+
 /**
  * Fetches the top 15 countries by page views (all-time) from the GA4 property.
  * Reuses the same OAuth client and property ID as runAnalytics().

@@ -7,7 +7,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { runAnalytics, runGA4Countries, getGA4DimensionValues, getFilteredGA4Data } from './analysis.js';
+import { runAnalytics, runGA4Countries, getGA4DimensionValues, getFilteredGA4Data, getGA4PeriodTotals } from './analysis.js';
 import { runGSC, listSites, runIndexingStatus, getIndexingData, inspectSingleUrl, inspectSingleUrlWithCache, isUrlInProperty, mapUrlInspectionError, fetchCoreWebVitals } from './gsc.js';
 import { analyzePageSpeed } from './pagespeed.js';
 
@@ -97,6 +97,21 @@ app.post('/api/analytics/filter', async (req, res) => {
         return res.json({ success: true, data });
     } catch (err) {
         console.error('Filtered GA4 data fetch failed:', err.message);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// POST /api/analytics/totals
+// Unique GA4 totals for the selected calendar ranges. Daily rows cannot be summed
+// for activeUsers, so the dashboard asks GA4 for each range directly.
+app.post('/api/analytics/totals', async (req, res) => {
+    const ranges = req.body.ranges || [];
+    const filters = req.body.filters || {};
+    try {
+        const data = await getGA4PeriodTotals(ranges, filters);
+        return res.json({ success: true, data });
+    } catch (err) {
+        console.error('GA4 period totals failed:', err.message);
         return res.status(500).json({ success: false, error: err.message });
     }
 });
