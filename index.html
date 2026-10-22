@@ -3575,12 +3575,22 @@
         let REF_DATE = new Date();
         let activeFilter = { days: 31, start: null, end: null };
 
+        function localIso(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
         function getDateRange() {
             if (activeFilter.days === 'all') return { start: '2000-01-01', end: REF_DATE.toISOString().slice(0, 10) };
             if (activeFilter.days === 'custom') return { start: activeFilter.start, end: activeFilter.end };
-            const end = new Date(REF_DATE), start = new Date(REF_DATE);
+            // GA4 "Last N days" is N complete days ending yesterday. Today is still open,
+            // so including it (Oct 16–22) under-counts versus the GA4 card (Oct 15–21).
+            const end = new Date();
+            end.setDate(end.getDate() - 1);
+            const start = new Date(end);
             start.setDate(start.getDate() - (activeFilter.days - 1));
-            return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+            return { start: localIso(start), end: localIso(end) };
         }
         function inRange(d) { const { start, end } = getDateRange(); return d >= start && d <= end; }
         function formatPrettyDate(iso) {
